@@ -1,0 +1,140 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the platform",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "professor", "alumni", "admin"] },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "university": { "type": "string" },
+        "department": { "type": "string" },
+        "bio": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "interests": { "type": "array", "items": { "type": "string" } },
+        "connectionsCount": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "visibility": { "type": "string", "enum": ["public", "connections", "private"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role", "email", "displayName", "visibility", "createdAt"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "A post in the news feed",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorPhoto": { "type": "string" },
+        "authorRole": { "type": "string" },
+        "content": { "type": "string" },
+        "mediaUrl": { "type": "string" },
+        "likesCount": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "authorName", "content", "likesCount", "commentsCount", "createdAt"]
+    },
+    "Connection": {
+      "title": "Connection",
+      "description": "A connection request or established connection between two users",
+      "type": "object",
+      "properties": {
+        "requesterId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["requesterId", "receiverId", "status", "createdAt"]
+    },
+    "SuccessStory": {
+      "title": "Success Story",
+      "description": "An inspirational story submitted by a user",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "authorName", "title", "content", "category", "status", "createdAt"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "A report of inappropriate content",
+      "type": "object",
+      "properties": {
+        "reporterId": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetType": { "type": "string", "enum": ["post", "profile", "story"] },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "resolved"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reporterId", "targetId", "targetType", "reason", "status", "createdAt"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "A chat session between users",
+      "type": "object",
+      "properties": {
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": { "type": "string" },
+        "lastMessageTime": { "type": "string", "format": "date-time" },
+        "unreadCount": { "type": "object" }
+      },
+      "required": ["participants"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message in a chat",
+      "type": "object",
+      "properties": {
+        "chatId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "content": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chatId", "senderId", "receiverId", "content", "read", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles"
+    },
+    "/posts/{postId}": {
+      "schema": { "$ref": "#/entities/Post" },
+      "description": "Stores feed posts"
+    },
+    "/connections/{connectionId}": {
+      "schema": { "$ref": "#/entities/Connection" },
+      "description": "Stores connections between users"
+    },
+    "/success_stories/{storyId}": {
+      "schema": { "$ref": "#/entities/SuccessStory" },
+      "description": "Stores success stories"
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/Report" },
+      "description": "Stores content reports"
+    },
+    "/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/Chat" },
+      "description": "Stores chat sessions"
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Stores individual messages"
+    }
+  }
+}
