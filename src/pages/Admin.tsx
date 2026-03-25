@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { db } from '../firebase';
 import { collection, query, getDocs, doc, updateDoc, deleteDoc, where, orderBy } from 'firebase/firestore';
-import { SuccessStory, UserProfile, Report } from '../types';
-import { Shield, CheckCircle, XCircle, Trash2, Users, BookOpen, Flag, AlertTriangle } from 'lucide-react';
+import { SuccessStory, UserProfile, Report, Post } from '../types';
+import { Shield, CheckCircle, XCircle, Trash2, Users, BookOpen, Flag, AlertTriangle, FileText, Filter, ArrowUpDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export function Admin() {
@@ -11,7 +11,12 @@ export function Admin() {
   const [pendingStories, setPendingStories] = useState<SuccessStory[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
-  const [activeTab, setActiveTab] = useState<'stories' | 'users' | 'reports'>('stories');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [activeTab, setActiveTab] = useState<'stories' | 'users' | 'reports' | 'posts'>('stories');
+  
+  // Report filters
+  const [reportSortOrder, setReportSortOrder] = useState<'desc' | 'asc'>('desc');
+  const [reportFilterType, setReportFilterType] = useState<'all' | 'post' | 'profile' | 'story'>('all');
 
   useEffect(() => {
     if (profile?.role !== 'admin') return;
@@ -36,6 +41,11 @@ export function Admin() {
         );
         const reportsSnap = await getDocs(reportsQ);
         setReports(reportsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Report[]);
+
+        // Fetch posts
+        const postsQ = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+        const postsSnap = await getDocs(postsQ);
+        setPosts(postsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Post[]);
       } catch (error) {
         console.error("Error fetching admin data:", error);
       }
@@ -97,12 +107,39 @@ export function Admin() {
 
       // Mark report as resolved
       await handleReportAction(report.id, 'resolved');
+      
+      // If it was a post, remove it from the posts list
+      if (report.targetType === 'post') {
+        setPosts(prev => prev.filter(p => p.id !== report.targetId));
+      }
+      
       alert(`${report.targetType} deleted successfully.`);
     } catch (error) {
       console.error("Error deleting content:", error);
       alert("Failed to delete content.");
     }
   };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
+    
+    try {
+      await deleteDoc(doc(db, 'posts', postId));
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      alert('Post deleted successfully.');
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post.");
+    }
+  };
+
+  const filteredAndSortedReports = reports
+    .filter(r => reportFilterType === 'all' || r.targetType === reportFilterType)
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return reportSortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="space-y-6">
@@ -144,6 +181,17 @@ export function Admin() {
             <div className="flex items-center gap-2">
               <Flag className="w-4 h-4" />
               Content Reports ({reports.length})
+            </div>
+          </button>
+          <button 
+            onClick={() => setActiveTab('posts')}
+            className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === 'posts' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Manage Posts ({posts.length})
             </div>
           </button>
         </div>
@@ -252,7 +300,36 @@ export function Admin() {
 
       {activeTab === 'reports' && (
         <div className="space-y-4">
-          {reports.map(report => (
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-700">Filter by:</span>
+              <select 
+                value={reportFilterType}
+                onChange={(e) => setReportFilterType(e.target.value as any)}
+                className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+                <option value="all">All Types</option>
+                <option value="post">Posts</option>
+                <option value="profile">Profiles</option>
+                <option value="story">Stories</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-700">Sort by:</span>
+              <select 
+                value={reportSortOrder}
+                onChange={(e) => setReportSortOrder(e.target.value as any)}
+                className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 outline-none"
+              >
+                <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
+              </select>
+            </div>
+          </div>
+
+          {filteredAndSortedReports.map(report => (
             <div key={report.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
@@ -267,6 +344,12 @@ export function Admin() {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleReportAction(report.id, 'resolved')}
+                    className="px-3 py-1.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-200"
+                  >
+                    Resolve
+                  </button>
                   <button 
                     onClick={() => handleReportAction(report.id, 'dismissed')}
                     className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
@@ -295,11 +378,56 @@ export function Admin() {
             </div>
           ))}
           
-          {reports.length === 0 && (
+          {filteredAndSortedReports.length === 0 && (
             <div className="text-center py-12 bg-white rounded-xl border border-slate-200 border-dashed">
               <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900">No pending reports</h3>
-              <p className="text-slate-500 mt-1">The community is looking good!</p>
+              <h3 className="text-lg font-medium text-slate-900">No reports found</h3>
+              <p className="text-slate-500 mt-1">Try changing your filters or enjoy the clean queue!</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'posts' && (
+        <div className="space-y-4">
+          {posts.map(post => (
+            <div key={post.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <img src={post.authorPhoto || `https://ui-avatars.com/api/?name=${post.authorName}`} alt="" className="w-10 h-10 rounded-full" />
+                  <div>
+                    <h3 className="font-bold text-slate-900">{post.authorName}</h3>
+                    <p className="text-xs text-slate-500">
+                      {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleDeletePost(post.id)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete Post"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-slate-800 whitespace-pre-wrap mb-4">{post.content}</p>
+              {post.mediaUrl && (
+                <div className="mb-4 rounded-xl overflow-hidden border border-slate-200">
+                  <img src={post.mediaUrl} alt="Post media" className="w-full max-h-96 object-cover" />
+                </div>
+              )}
+              <div className="flex gap-4 text-sm text-slate-500 border-t border-slate-100 pt-3">
+                <span>{post.likesCount || 0} Likes</span>
+                <span>{post.commentsCount || 0} Comments</span>
+              </div>
+            </div>
+          ))}
+          
+          {posts.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-xl border border-slate-200 border-dashed">
+              <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-900">No posts found</h3>
+              <p className="text-slate-500 mt-1">There are no posts in the system yet.</p>
             </div>
           )}
         </div>
