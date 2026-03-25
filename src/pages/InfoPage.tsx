@@ -291,7 +291,7 @@ export function InfoPage({ type }: { type: PageType }) {
         </div>
         
         <div className="mt-8 text-center">
-          <Link to="/home" className="text-indigo-600 font-medium hover:text-indigo-700">
+          <Link to="/" className="text-indigo-600 font-medium hover:text-indigo-700">
             &larr; Back to Home
           </Link>
         </div>
