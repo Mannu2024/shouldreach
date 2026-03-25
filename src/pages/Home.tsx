@@ -315,7 +315,7 @@ export function Home() {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleGoogleLogin} 
+                onClick={() => { setAuthMode('login'); setIsJoining(true); }} 
                 className="text-indigo-700 font-semibold hover:text-indigo-800 transition-colors"
               >
                 Login
@@ -323,7 +323,7 @@ export function Home() {
               <motion.button 
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setIsJoining(true)} 
+                onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
                 className="px-5 py-2.5 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
               >
                 Join Now
@@ -360,14 +360,14 @@ export function Home() {
             <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
               <motion.button 
                 whileTap={{ scale: 0.95 }}
-                onClick={handleGoogleLogin} 
+                onClick={() => { setMobileMenuOpen(false); setAuthMode('login'); setIsJoining(true); }} 
                 className="w-full py-3 text-indigo-700 font-semibold border border-indigo-100 rounded-xl"
               >
                 Login
               </motion.button>
               <motion.button 
                 whileTap={{ scale: 0.95 }}
-                onClick={() => { setMobileMenuOpen(false); setIsJoining(true); }} 
+                onClick={() => { setMobileMenuOpen(false); setAuthMode('signup'); setIsJoining(true); }} 
                 className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-xl"
               >
                 Join Now
@@ -668,7 +668,7 @@ export function Home() {
                   <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsJoining(true)} 
+                    onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
                     className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2"
                   >
                     Join Now <ArrowRight className="w-5 h-5" />
@@ -701,7 +701,7 @@ export function Home() {
                   className="mt-6 text-center sm:text-left"
                 >
                   <span className="text-slate-600">Already a member? </span>
-                  <button onClick={handleGoogleLogin} className="text-indigo-700 font-bold hover:underline">
+                  <button onClick={() => { setAuthMode('login'); setIsJoining(true); }} className="text-indigo-700 font-bold hover:underline">
                     Login
                   </button>
                 </motion.div>
@@ -1203,7 +1203,7 @@ export function Home() {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsJoining(true)} 
+              onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
               className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition-all shadow-xl shadow-indigo-900/20"
             >
               Create Profile
@@ -1211,7 +1211,7 @@ export function Home() {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setIsJoining(true)} 
+              onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
               className="px-8 py-4 bg-transparent text-white border-2 border-white/30 rounded-xl font-bold text-lg hover:bg-white/10 transition-all"
             >
               Join Now
@@ -1219,7 +1219,7 @@ export function Home() {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleGoogleLogin} 
+              onClick={() => { setAuthMode('login'); setIsJoining(true); }} 
               className="px-8 py-4 bg-indigo-500 text-white rounded-xl font-bold text-lg hover:bg-indigo-400 transition-all"
             >
               Login
