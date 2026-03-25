@@ -47,7 +47,7 @@ export function Layout() {
 
   const handleSignOut = async () => {
     await signOut(auth);
-    navigate('/');
+    navigate('/home');
   };
 
   const navItems = [
@@ -62,7 +62,7 @@ export function Layout() {
     navItems.push({ icon: Shield, label: 'Admin', path: '/admin' });
   }
 
-  if (!user && location.pathname === '/') {
+  if (!user && (location.pathname === '/' || location.pathname === '/home')) {
     return (
       <div className="min-h-screen bg-white">
         <AnimatePresence mode="wait">
@@ -91,7 +91,7 @@ export function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link to={user ? "/feed" : "/"} className="flex items-center gap-2">
+              <Link to={user ? "/feed" : "/home"} className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                   <Handshake className="text-white w-5 h-5" />
                 </div>

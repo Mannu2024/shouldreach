@@ -32,12 +32,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   const isPasswordProvider = user.providerData.some(p => p.providerId === 'password');
   if (isPasswordProvider && !user.emailVerified) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
   
   return <>{children}</>;
@@ -89,7 +89,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route index element={<Navigate to="/home" replace />} />
+            <Route path="home" element={<Home />} />
             <Route path="feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="network" element={<ProtectedRoute><Network /></ProtectedRoute>} />
             <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
