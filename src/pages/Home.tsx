@@ -13,7 +13,7 @@ import {
   GraduationCap, BookOpen, Briefcase, Users, Search, 
   MessageSquare, TrendingUp, Award, Building, ChevronRight, 
   Star, Heart, Share2, MapPin, Globe, Zap, Shield, ArrowRight, CheckCircle2,
-  Menu, X, User, Mail, Phone as PhoneIcon, Lock, Eye, EyeOff, Handshake
+  Menu, X, User, Mail, Phone as PhoneIcon, Lock, Eye, EyeOff, Handshake, Quote
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import Hero3DModel from '../components/Hero3DModel';
@@ -1000,6 +1000,62 @@ export function Home() {
         </div>
       </section>
 
+      {/* Student Testimonials Section */}
+      <section className="py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">What Our Students Say</h2>
+            <p className="text-lg text-slate-600">Join thousands of students who are already transforming their academic journey.</p>
+          </motion.div>
+
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={{
+              visible: { transition: { staggerChildren: 0.1 } },
+              hidden: {}
+            }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            <TestimonialCard 
+              quote="ShouldReach helped me find a research partner from another state. It's truly a game-changer for Indian students."
+              author="Ananya Iyer"
+              uni="Anna University"
+              initial="A"
+              color="bg-indigo-100 text-indigo-600"
+            />
+            <TestimonialCard 
+              quote="The mentorship I received from alumni on this platform was instrumental in landing my first internship."
+              author="Rohan Das"
+              uni="Jadavpur University"
+              initial="R"
+              color="bg-orange-100 text-orange-600"
+            />
+            <TestimonialCard 
+              quote="Finally, a professional network that understands the unique challenges of the Indian academic ecosystem."
+              author="Meera Nair"
+              uni="VIT Vellore"
+              initial="M"
+              color="bg-green-100 text-green-600"
+            />
+            <TestimonialCard 
+              quote="Connecting with professors from different IITs has opened up so many research opportunities for me."
+              author="Sahil Khan"
+              uni="IIT Kanpur"
+              initial="S"
+              color="bg-purple-100 text-purple-600"
+            />
+          </motion.div>
+        </div>
+      </section>
+
       {/* Community Feed Preview */}
       <section className="py-24 bg-white border-t border-slate-200" id="community">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1411,6 +1467,31 @@ function StoryCard({ tag, title, author, uni }: any) {
         </div>
         <div>
           <p className="font-bold text-sm text-slate-900">{author}</p>
+          <p className="text-xs text-slate-500">{uni}</p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function TestimonialCard({ quote, author, uni, initial, color }: any) {
+  return (
+    <motion.div 
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
+      whileHover={{ y: -5 }}
+      className="bg-slate-50 p-8 rounded-2xl border border-slate-100 relative group"
+    >
+      <Quote className="absolute top-4 right-4 w-8 h-8 text-slate-200 group-hover:text-indigo-100 transition-colors" />
+      <p className="text-slate-700 italic mb-6 relative z-10">"{quote}"</p>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${color}`}>
+          {initial}
+        </div>
+        <div>
+          <h4 className="font-bold text-sm text-slate-900">{author}</h4>
           <p className="text-xs text-slate-500">{uni}</p>
         </div>
       </div>
