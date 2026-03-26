@@ -21,7 +21,7 @@ import {
 } from 'firebase/firestore';
 import { Chat, Message, UserProfile } from '../types';
 import { Send, Search, User, MoreVertical, Phone, Video, Info, Check, CheckCheck, ArrowLeft } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 import { sendNotification } from '../services/notificationService';
 import { handleFirestoreError, OperationType } from '../utils/firestoreErrorHandler';
@@ -137,6 +137,26 @@ export function Messages() {
 
     return () => unsubscribe();
   }, [user?.uid]);
+
+  // Listen to other participant's profile for real-time status
+  useEffect(() => {
+    if (!selectedChat || !user) return;
+    
+    const otherId = selectedChat.participants.find(id => id !== user.uid);
+    if (!otherId) return;
+
+    const unsubscribe = onSnapshot(doc(db, 'users', otherId), (doc) => {
+      if (doc.exists()) {
+        const userData = doc.data() as UserProfile;
+        setChatUsers(prev => ({
+          ...prev,
+          [otherId]: userData
+        }));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [selectedChat?.id, user?.uid]);
 
   // Fetch messages for selected chat
   useEffect(() => {
@@ -261,6 +281,16 @@ export function Messages() {
     return (now.getTime() - lastSeenDate.getTime()) < 3 * 60 * 1000;
   };
 
+  const formatLastSeen = (lastSeen?: string) => {
+    if (!lastSeen) return 'Offline';
+    try {
+      const date = new Date(lastSeen);
+      return `Last seen ${formatDistanceToNow(date, { addSuffix: true })}`;
+    } catch (e) {
+      return 'Offline';
+    }
+  };
+
   const filteredChats = chats.filter(chat => {
     const other = getOtherParticipant(chat);
     if (!other) return false;
@@ -380,7 +410,7 @@ export function Messages() {
                     </p>
                   ) : (
                     <p className="text-[10px] text-slate-400 font-medium">
-                      Offline
+                      {formatLastSeen(getOtherParticipant(selectedChat)?.lastSeen)}
                     </p>
                   )}
                 </div>
