@@ -1327,7 +1327,7 @@ export function Home() {
           </div>
           
           <div className="pt-8 border-t border-slate-800 text-sm text-center md:text-left flex flex-col md:flex-row justify-between items-center">
-            <p>© 2026 Divya Enterprise Pvt. Ltd. All rights reserved.</p>
+            <p>© 2026 Divyam Enterprise Pvt. Ltd. All rights reserved.</p>
             <div className="flex items-center gap-2 mt-4 md:mt-0">
               <span className="w-3 h-3 rounded-full bg-orange-500"></span>
               <span className="w-3 h-3 rounded-full bg-white"></span>
