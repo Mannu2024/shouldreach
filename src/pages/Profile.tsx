@@ -79,6 +79,7 @@ export function Profile() {
     projects: true,
     skills: true,
     certifications: true,
+    followedCompanies: true,
     interests: true,
     socialLinks: true
   });
@@ -1522,6 +1523,40 @@ export function Profile() {
             )}
           </div>
 
+          {/* Interests Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-slate-900">Interests</h2>
+              <div className="flex gap-2">
+                {isOwnProfile && (
+                  <button onClick={() => setEditingSection('interests')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                    <Plus className="w-5 h-5" />
+                  </button>
+                )}
+                <button onClick={() => toggleSection('interests')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                  {expandedSections.interests ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+            
+            {expandedSections.interests && (
+              <div className="flex flex-wrap gap-2">
+                {profile.interests && profile.interests.length > 0 ? (
+                  profile.interests.map((interest, index) => (
+                    <span 
+                      key={index}
+                      className="px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-medium border border-slate-200"
+                    >
+                      {interest}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-slate-500 py-2">No interests added yet.</p>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Companies Followed Section */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div className="flex justify-between items-center mb-4">
@@ -1532,13 +1567,13 @@ export function Profile() {
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
-                <button onClick={() => toggleSection('interests')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-                  {expandedSections.interests ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                <button onClick={() => toggleSection('followedCompanies')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                  {expandedSections.followedCompanies ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
               </div>
             </div>
             
-            {expandedSections.interests && (
+            {expandedSections.followedCompanies && (
               <>
                 {isEditing && (
                   <div className="mb-6 flex gap-2">
@@ -1757,6 +1792,20 @@ export function Profile() {
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                       rows={4}
                       placeholder="e.g. React, TypeScript, Node.js"
+                    />
+                  </div>
+                </div>
+              )}
+              {editingSection === 'interests' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Interests (comma separated)</label>
+                    <textarea 
+                      value={formData.interests}
+                      onChange={(e) => setFormData({ ...formData, interests: e.target.value })}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      rows={4}
+                      placeholder="e.g. Open Source, AI, Machine Learning, Web Development"
                     />
                   </div>
                 </div>

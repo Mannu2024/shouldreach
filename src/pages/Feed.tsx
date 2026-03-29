@@ -19,7 +19,8 @@ import {
   MoreHorizontal,
   Globe,
   Users as UsersIcon,
-  Repeat
+  Repeat,
+  Paperclip
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -39,6 +40,7 @@ export function Feed() {
   const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [mediaUrlInput, setMediaUrlInput] = useState('');
   const [mediaTypeInput, setMediaTypeInput] = useState<'image' | 'video'>('image');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Share state
   const [sharingPostId, setSharingPostId] = useState<string | null>(null);
@@ -92,6 +94,36 @@ export function Feed() {
     setMediaItems([...mediaItems, { url: mediaUrlInput, type: mediaTypeInput }]);
     setMediaUrlInput('');
     setIsAddingMedia(false);
+  };
+
+  const toggleMediaInput = (type: 'image' | 'video') => {
+    if (isAddingMedia && mediaTypeInput === type) {
+      setIsAddingMedia(false);
+    } else {
+      setIsAddingMedia(true);
+      setMediaTypeInput(type);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 800000) { // ~800KB limit for Firestore safety
+      alert("File is too large. Please use a URL for larger media or upload a smaller image (under 800KB).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setMediaItems([...mediaItems, { 
+        url: base64String, 
+        type: file.type.startsWith('video') ? 'video' : 'image' 
+      }]);
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeMedia = (index: number) => {
@@ -243,6 +275,13 @@ export function Feed() {
             )}
 
             {/* Add Media Input */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              accept="image/*,video/*" 
+              className="hidden" 
+            />
             <AnimatePresence>
               {isAddingMedia && (
                 <motion.div 
@@ -291,16 +330,35 @@ export function Feed() {
               <div className="flex gap-1">
                 <button 
                   type="button"
-                  onClick={() => setIsAddingMedia(!isAddingMedia)}
-                  className={`p-2 rounded-xl transition-colors ${isAddingMedia ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                  onClick={() => toggleMediaInput('image')}
+                  className={`p-2 rounded-xl transition-colors ${isAddingMedia && mediaTypeInput === 'image' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                  title="Add Image URL"
                 >
                   <ImageIcon className="w-5 h-5" />
                 </button>
                 <button 
                   type="button"
-                  className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
+                  onClick={() => toggleMediaInput('video')}
+                  className={`p-2 rounded-xl transition-colors ${isAddingMedia && mediaTypeInput === 'video' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                  title="Add Video URL"
                 >
                   <VideoIcon className="w-5 h-5" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsAddingMedia(!isAddingMedia)}
+                  className={`p-2 rounded-xl transition-colors ${isAddingMedia ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                  title="Link Media"
+                >
+                  <LinkIcon className="w-5 h-5" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
+                  title="Upload Media"
+                >
+                  <Paperclip className="w-5 h-5" />
                 </button>
               </div>
               <button
