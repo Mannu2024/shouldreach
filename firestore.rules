@@ -15,8 +15,8 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || 
-         (request.auth.token.email == "manishthakur2024@ramjas.du.ac.in" && request.auth.token.email_verified == true));
+        (request.auth.token.email == "manishthakur2024@ramjas.du.ac.in" || request.auth.token.email == "admin@shouldreach.com" || 
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
     
     function hasOnlyAllowedFields(allowedFields) {
@@ -173,10 +173,35 @@ service cloud.firestore {
              data.createdAt is string;
     }
 
+    function isValidWebsiteContent() {
+      let data = request.resource.data;
+      return hasOnlyAllowedFields(['hero', 'features', 'students', 'professors', 'stories', 'testimonials', 'community', 'opportunities', 'universities', 'stats', 'cta', 'updatedAt', 'updatedBy']) &&
+             data.hero is map &&
+             data.features is map &&
+             data.students is map &&
+             data.professors is map &&
+             data.stories is map &&
+             data.testimonials is map &&
+             data.community is map &&
+             data.opportunities is map &&
+             data.universities is map &&
+             data.stats is map &&
+             data.cta is map &&
+             (!('updatedAt' in data) || data.updatedAt is string) &&
+             (!('updatedBy' in data) || data.updatedBy is string);
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
     
+    match /website_content/{documentId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidWebsiteContent();
+      allow update: if isAdmin() && isValidWebsiteContent();
+      allow delete: if isAdmin();
+    }
+
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId) && isValidUser() && (request.resource.data.role != 'admin' || isAdmin());
@@ -260,6 +285,27 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.endorserId == request.auth.uid;
       allow delete: if isAuthenticated() && (resource.data.endorserId == request.auth.uid || resource.data.userId == request.auth.uid);
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (isAdmin() || (resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId));
+      allow delete: if isAdmin();
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /admin_activities/{activityId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.adminId == request.auth.uid;
+      allow update: if false; // Activities should be immutable
+      allow delete: if false; // Activities should be immutable
     }
   }
 }

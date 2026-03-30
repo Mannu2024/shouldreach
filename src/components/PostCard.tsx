@@ -191,7 +191,7 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
   const currentReaction = REACTION_TYPES.find(r => r.type === userReaction?.type);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
       {/* Repost Header */}
       {post.repostOf && (
         <div className="px-5 pt-3 flex items-center gap-2 text-slate-500 text-sm border-b border-slate-50 pb-2">
@@ -222,7 +222,7 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
           </button>
         </div>
         
-        <p className="text-slate-800 whitespace-pre-wrap leading-relaxed mb-4">{post.content}</p>
+        <p className="text-slate-800 whitespace-pre-wrap leading-relaxed mb-4 break-words">{post.content}</p>
 
         {/* Original Post Content for Reposts */}
         {post.repostOf && originalPost && (

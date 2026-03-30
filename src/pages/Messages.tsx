@@ -306,7 +306,7 @@ export function Messages() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-10rem)] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex">
+    <div className="max-w-6xl mx-auto h-[calc(100vh-14rem)] md:h-[calc(100vh-10rem)] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex">
       {/* Chat List */}
       <div className={`${showChatList ? 'w-full md:w-80 lg:w-96' : 'hidden md:flex md:w-80 lg:w-96'} border-r border-slate-200 flex flex-col`}>
         <div className="p-4 border-b border-slate-200">

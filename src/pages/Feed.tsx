@@ -219,9 +219,9 @@ export function Feed() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-20">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Search Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/80 backdrop-blur-md py-2">
+      <div className="sticky top-16 z-10 bg-slate-50/80 backdrop-blur-md py-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input

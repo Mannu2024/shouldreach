@@ -95,6 +95,7 @@ export interface UserProfile {
   uid: string;
   role: UserRole;
   email: string;
+  phoneNumber?: string;
   displayName: string;
   photoURL?: string;
   coverURL?: string;
@@ -233,4 +234,40 @@ export interface Notification {
   createdAt: string;
   metadata?: Record<string, any>;
 }
+
+export interface Ticket {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  category: string;
+  description: string;
+  status: 'open' | 'in-progress' | 'resolved';
+  priority: 'low' | 'medium' | 'high';
+  assignedTo?: string;
+  internalNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  currency: string;
+  status: 'success' | 'failed' | 'pending' | 'refunded';
+  invoiceId?: string;
+  createdAt: string;
+}
+
+export interface AdminActivity {
+  id: string;
+  adminId: string;
+  adminName: string;
+  action: string;
+  details: string;
+  createdAt: string;
+}
+
 

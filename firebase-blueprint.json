@@ -105,9 +105,75 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["chatId", "senderId", "receiverId", "content", "read", "createdAt"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "A customer support ticket",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "in-progress", "resolved"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "assignedTo": { "type": "string" },
+        "internalNotes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "userEmail", "category", "description", "status", "priority", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A payment transaction",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["success", "failed", "pending", "refunded"] },
+        "invoiceId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "amount", "currency", "status", "createdAt"]
+    },
+    "AdminActivity": {
+      "title": "Admin Activity",
+      "description": "Log of actions performed by admins",
+      "type": "object",
+      "properties": {
+        "adminId": { "type": "string" },
+        "adminName": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["adminId", "adminName", "action", "createdAt"]
+    },
+    "WebsiteContent": {
+      "title": "Website Content",
+      "description": "Content for the main website sections",
+      "type": "object",
+      "properties": {
+        "hero": { "type": "object" },
+        "stats": { "type": "object" },
+        "features": { "type": "object" },
+        "testimonials": { "type": "object" },
+        "cta": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["hero", "stats", "features", "testimonials", "cta"]
     }
   },
   "firestore": {
+    "/website_content/{documentId}": {
+      "schema": { "$ref": "#/entities/WebsiteContent" },
+      "description": "Stores dynamic content for the website"
+    },
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/User" },
       "description": "Stores user profiles"
@@ -135,6 +201,18 @@
     "/messages/{messageId}": {
       "schema": { "$ref": "#/entities/Message" },
       "description": "Stores individual messages"
+    },
+    "/tickets/{ticketId}": {
+      "schema": { "$ref": "#/entities/Ticket" },
+      "description": "Stores customer support tickets"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Stores payment transactions"
+    },
+    "/admin_activities/{activityId}": {
+      "schema": { "$ref": "#/entities/AdminActivity" },
+      "description": "Stores admin activity logs"
     }
   }
 }

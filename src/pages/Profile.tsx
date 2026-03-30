@@ -596,42 +596,44 @@ export function Profile() {
               </button>
             </div>
             
-            <div className="px-6 pb-6 relative">
-              {/* Profile Photo */}
-              <div className="absolute -top-24 left-6">
-                <img 
-                  src={profile.photoURL || `https://ui-avatars.com/api/?name=${profile.displayName}&background=random&size=160`} 
-                  alt={profile.displayName} 
-                  className="w-40 h-40 rounded-full border-4 border-white shadow-sm bg-white object-cover"
-                />
-              </div>
-              
-              <div className="flex justify-end pt-4">
-                {isOwnProfile && (
-                  !isEditing ? (
-                    <button 
-                      onClick={() => setIsEditing(true)}
-                      className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
+            <div className="px-6 pb-6">
+              <div className="flex justify-between items-start">
+                {/* Profile Photo */}
+                <div className="-mt-20 relative z-10">
+                  <img 
+                    src={profile.photoURL || `https://ui-avatars.com/api/?name=${profile.displayName}&background=random&size=160`} 
+                    alt={profile.displayName} 
+                    className="w-40 h-40 rounded-full border-4 border-white shadow-sm bg-white object-cover"
+                  />
+                </div>
+                
+                <div className="pt-4">
+                  {isOwnProfile && (
+                    !isEditing ? (
                       <button 
-                        onClick={() => setIsEditing(false)}
-                        className="flex items-center gap-2 px-4 py-1.5 border border-slate-500 text-slate-600 rounded-full font-semibold hover:bg-slate-50 transition-colors"
+                        onClick={() => setIsEditing(true)}
+                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                       >
-                        Cancel
+                        <Edit2 className="w-5 h-5" />
                       </button>
-                      <button 
-                        onClick={handleSave}
-                        className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )
-                )}
+                    ) : (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setIsEditing(false)}
+                          className="flex items-center gap-2 px-4 py-1.5 border border-slate-500 text-slate-600 rounded-full font-semibold hover:bg-slate-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={handleSave}
+                          className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
               
               <div className="mt-4">

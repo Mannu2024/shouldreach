@@ -58,10 +58,6 @@ export function Layout() {
     { icon: Bell, label: 'Notifications', path: '/notifications' },
   ];
 
-  if (profile?.role === 'admin') {
-    navItems.push({ icon: Shield, label: 'Admin', path: '/admin' });
-  }
-
   if (!user && location.pathname === '/') {
     return (
       <div className="min-h-screen bg-white">
@@ -117,9 +113,9 @@ export function Layout() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar */}
+          {/* Sidebar (Desktop) */}
           {user && (
-            <aside className="w-full md:w-64 shrink-0">
+            <aside className="hidden md:block w-64 shrink-0">
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sticky top-24">
                 <div className="space-y-1">
                   {navItems.map((item) => {
@@ -162,7 +158,7 @@ export function Layout() {
           )}
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 pb-20 md:pb-0">
             {user && profile && !profile.isProfileComplete && location.pathname !== '/profile-setup' && (
               <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -196,6 +192,38 @@ export function Layout() {
           </main>
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {user && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 pb-safe">
+          <div className="flex items-center justify-around h-16 px-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={cn(
+                    "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
+                    isActive ? "text-indigo-600" : "text-slate-500 hover:text-slate-900"
+                  )}
+                >
+                  <div className="relative">
+                    <Icon className={cn("w-6 h-6", isActive && "fill-indigo-50")} />
+                    {item.path === '/notifications' && unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center border-2 border-white">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

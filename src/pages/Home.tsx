@@ -6,7 +6,7 @@ import {
   RecaptchaVerifier, signInWithPhoneNumber, sendPasswordResetEmail,
   sendEmailVerification
 } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { useAuthStore } from '../store/useAuthStore';
 import { UserRole } from '../types';
 import { 
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import Hero3DModel from '../components/Hero3DModel';
+import { defaultWebsiteContent } from '../lib/defaultContent';
 
 export function Home() {
   const { scrollYProgress, scrollY } = useScroll();
@@ -25,6 +26,7 @@ export function Home() {
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
   const heroY = useTransform(scrollY, [0, 500], [0, -100]);
 
+  const [content, setContent] = useState(defaultWebsiteContent);
   const [isJoining, setIsJoining] = useState(false);
   const [authMethod, setAuthMethod] = useState<'google' | 'email' | 'phone'>('google');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('signup');
@@ -47,7 +49,8 @@ export function Home() {
   useEffect(() => {
     if (user) {
       const isPasswordProvider = user.providerData.some(p => p.providerId === 'password');
-      if (isPasswordProvider && !user.emailVerified) {
+      const isDefaultAdmin = ['manishthakur2024@ramjas.du.ac.in', 'admin@shouldreach.com'].includes(user.email?.toLowerCase() || '');
+      if (isPasswordProvider && !user.emailVerified && !isDefaultAdmin) {
         if (!loading) {
           auth.signOut();
         }
@@ -65,6 +68,15 @@ export function Home() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'website_content', 'home'), (doc) => {
+      if (doc.exists()) {
+        setContent({ ...defaultWebsiteContent, ...doc.data() } as typeof defaultWebsiteContent);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleGoogleLogin = async () => {
@@ -114,7 +126,8 @@ export function Home() {
         setAuthMode('login');
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
-        if (!userCredential.user.emailVerified) {
+        const isDefaultAdmin = ['manishthakur2024@ramjas.du.ac.in', 'admin@shouldreach.com'].includes(userCredential.user.email?.toLowerCase() || '');
+        if (!userCredential.user.emailVerified && !isDefaultAdmin) {
           await auth.signOut();
           setError('Please verify your email address before logging in. Check your inbox for the verification link.');
           return;
@@ -313,20 +326,12 @@ export function Home() {
 
             <div className="hidden lg:flex items-center gap-4">
               <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => { setAuthMode('login'); setIsJoining(true); }} 
-                className="text-indigo-700 font-semibold hover:text-indigo-800 transition-colors"
-              >
-                Login
-              </motion.button>
-              <motion.button 
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
-                className="px-5 py-2.5 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg"
+                onClick={() => { user ? navigate('/feed') : setIsJoining(true); }} 
+                className="px-6 py-2.5 bg-[#6366F1] text-white rounded-xl font-bold hover:bg-indigo-600 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
               >
-                Join Now
+                Go to Feed <ArrowRight className="w-4 h-4" />
               </motion.button>
             </div>
 
@@ -640,7 +645,7 @@ export function Home() {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-100 text-orange-700 font-semibold text-sm mb-6 shadow-sm hover:shadow-md transition-shadow cursor-default"
                 >
                   <span className="text-lg">🇮🇳</span>
-                  Bharat Ka Apna Academic Network
+                  {content.hero.tagline}
                 </motion.div>
                 <motion.h1 
                   initial={{ opacity: 0, y: 20 }}
@@ -648,7 +653,7 @@ export function Home() {
                   transition={{ delay: 0.3, duration: 0.6 }}
                   className="text-5xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-6"
                 >
-                  Empowering the Youth of <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-indigo-600 to-green-600">New India</span>
+                  {content.hero.title}
                 </motion.h1>
                 <motion.p 
                   initial={{ opacity: 0, y: 20 }}
@@ -656,7 +661,7 @@ export function Home() {
                   transition={{ delay: 0.4, duration: 0.6 }}
                   className="text-xl text-slate-600 mb-10 leading-relaxed"
                 >
-                  Desh ke har campus se judein. Connect with students, professors, and alumni from universities across India. Build your profile, share your journey, and shape the future of Bharat.
+                  {content.hero.subtitle}
                 </motion.p>
                 
                 <motion.div 
@@ -671,7 +676,7 @@ export function Home() {
                     onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
                     className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 flex items-center justify-center gap-2"
                   >
-                    Join Now <ArrowRight className="w-5 h-5" />
+                    {content.hero.ctaPrimary} <ArrowRight className="w-5 h-5" />
                   </motion.button>
                   <motion.a 
                     whileHover={{ scale: 1.05 }}
@@ -679,7 +684,7 @@ export function Home() {
                     href="#community" 
                     className="px-8 py-4 bg-white text-slate-700 border-2 border-slate-200 rounded-xl font-bold text-lg hover:border-indigo-200 hover:bg-indigo-50 transition-all flex items-center justify-center"
                   >
-                    Explore Community
+                    {content.hero.ctaSecondary}
                   </motion.a>
                 </motion.div>
 
@@ -803,8 +808,8 @@ export function Home() {
             transition={{ duration: 0.6 }}
             className="text-center max-w-3xl mx-auto mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Why Join ShouldReach?</h2>
-            <p className="text-lg text-slate-600">The ultimate platform designed specifically for the Indian academic ecosystem.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">{content.features.title}</h2>
+            <p className="text-lg text-slate-600">{content.features.subtitle}</p>
           </motion.div>
 
           <motion.div 
@@ -819,38 +824,38 @@ export function Home() {
           >
             <FeatureCard 
               icon={Globe} 
-              title="Connect Across India" 
-              desc="Connect with students from universities across India. Break campus boundaries."
+              title={content.features.items[0].title} 
+              desc={content.features.items[0].desc}
               color="bg-blue-50 text-blue-600"
             />
             <FeatureCard 
               icon={User} 
-              title="Build Your Profile" 
-              desc="Build your professional student profile. Showcase projects, skills, and academics."
+              title={content.features.items[1].title} 
+              desc={content.features.items[1].desc}
               color="bg-indigo-50 text-indigo-600"
             />
             <FeatureCard 
               icon={Users} 
-              title="Find Study Buddies" 
-              desc="Find study buddies and collaborators for hackathons, research, and projects."
+              title={content.features.items[2].title} 
+              desc={content.features.items[2].desc}
               color="bg-orange-50 text-orange-600"
             />
             <FeatureCard 
               icon={GraduationCap} 
-              title="Connect with Mentors" 
-              desc="Connect with professors and alumni mentors for career and academic guidance."
+              title={content.features.items[3].title} 
+              desc={content.features.items[3].desc}
               color="bg-green-50 text-green-600"
             />
             <FeatureCard 
               icon={Award} 
-              title="Share Achievements" 
-              desc="Share achievements and success stories to inspire others and build your brand."
+              title={content.features.items[4].title} 
+              desc={content.features.items[4].desc}
               color="bg-purple-50 text-purple-600"
             />
             <FeatureCard 
               icon={Briefcase} 
-              title="Discover Opportunities" 
-              desc="Discover internships, events, hackathons, and research opportunities."
+              title={content.features.items[5].title} 
+              desc={content.features.items[5].desc}
               color="bg-rose-50 text-rose-600"
             />
           </motion.div>
@@ -868,8 +873,8 @@ export function Home() {
             className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6"
           >
             <div className="max-w-2xl">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Find Your Campus Network</h2>
-              <p className="text-lg text-slate-600">Meet students from different universities, collaborate on ideas, and grow together.</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">{content.students.title}</h2>
+              <p className="text-lg text-slate-600">{content.students.subtitle}</p>
             </div>
             <button className="text-indigo-600 font-semibold hover:text-indigo-800 flex items-center gap-2 whitespace-nowrap group">
               View all students <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -920,19 +925,18 @@ export function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6">Connect With Professors and Mentors</h2>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6">{content.professors.title}</h2>
                 <ul className="space-y-4 mb-8">
-                  <motion.li whileHover={{ x: 5 }} className="flex items-center gap-3 text-indigo-100 transition-transform"><CheckCircle2 className="w-6 h-6 text-green-400" /> Discover professors by department</motion.li>
-                  <motion.li whileHover={{ x: 5 }} className="flex items-center gap-3 text-indigo-100 transition-transform"><CheckCircle2 className="w-6 h-6 text-green-400" /> Follow professors for updates</motion.li>
-                  <motion.li whileHover={{ x: 5 }} className="flex items-center gap-3 text-indigo-100 transition-transform"><CheckCircle2 className="w-6 h-6 text-green-400" /> Request mentorship</motion.li>
-                  <motion.li whileHover={{ x: 5 }} className="flex items-center gap-3 text-indigo-100 transition-transform"><CheckCircle2 className="w-6 h-6 text-green-400" /> Explore research guidance</motion.li>
+                  {content.professors.points.map((point, idx) => (
+                    <motion.li key={idx} whileHover={{ x: 5 }} className="flex items-center gap-3 text-indigo-100 transition-transform"><CheckCircle2 className="w-6 h-6 text-green-400" /> {point}</motion.li>
+                  ))}
                 </ul>
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-6 py-3 bg-white text-indigo-950 rounded-xl font-bold hover:bg-indigo-50 transition-colors"
                 >
-                  Explore Faculty Directory
+                  {content.professors.cta}
                 </motion.button>
               </motion.div>
               
@@ -964,8 +968,8 @@ export function Home() {
             transition={{ duration: 0.6 }}
             className="text-center max-w-3xl mx-auto mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Success Stories From India’s Campuses</h2>
-            <p className="text-lg text-slate-600">Read inspiring journeys of placements, startups, and research breakthroughs.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">{content.stories.title}</h2>
+            <p className="text-lg text-slate-600">{content.stories.subtitle}</p>
           </motion.div>
 
           <motion.div 
@@ -1010,8 +1014,8 @@ export function Home() {
             transition={{ duration: 0.6 }}
             className="text-center max-w-3xl mx-auto mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">What Our Students Say</h2>
-            <p className="text-lg text-slate-600">Join thousands of students who are already transforming their academic journey.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">{content.testimonials.title}</h2>
+            <p className="text-lg text-slate-600">{content.testimonials.subtitle}</p>
           </motion.div>
 
           <motion.div 
@@ -1066,9 +1070,9 @@ export function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Join the Conversation</h2>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">{content.community.title}</h2>
               <p className="text-lg text-slate-600 mb-8">
-                The community feed is where the magic happens. Share your achievements, ask for advice, discuss campus events, and stay updated with what's happening across Indian universities.
+                {content.community.subtitle}
               </p>
               <div className="space-y-4">
                 <motion.div whileHover={{ scale: 1.02 }} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 transition-transform cursor-default">
@@ -1120,7 +1124,7 @@ export function Home() {
       </section>
 
       {/* Opportunities Section */}
-      <section className="py-24 bg-slate-900 text-white" id="opportunities">
+      <section className="py-24 bg-[#0B0F19] text-white" id="opportunities">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -1129,8 +1133,8 @@ export function Home() {
             transition={{ duration: 0.6 }}
             className="text-center max-w-3xl mx-auto mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Explore Opportunities</h2>
-            <p className="text-lg text-slate-400">Find the right stepping stone for your career.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{content.opportunities.title}</h2>
+            <p className="text-lg text-slate-400">{content.opportunities.subtitle}</p>
           </motion.div>
 
           <motion.div 
@@ -1153,17 +1157,27 @@ export function Home() {
       </section>
 
       {/* University Network Section */}
-      <section className="py-24 bg-white" id="universities">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h2 
+      <section className="py-24 bg-white relative overflow-hidden" id="universities">
+        {/* Concentric Circles Background */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-slate-100 rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-slate-100 rounded-full pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-slate-100 rounded-full pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-12"
+            className="mb-12"
           >
-            Students From Universities Across India
-          </motion.h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0B0F19] mb-4">
+              {content.universities.title}
+            </h2>
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+              {content.universities.subtitle}
+            </p>
+          </motion.div>
           
           <motion.div 
             initial="hidden"
@@ -1173,18 +1187,17 @@ export function Home() {
               visible: { transition: { staggerChildren: 0.05 } },
               hidden: {}
             }}
-            className="flex flex-wrap justify-center gap-4 md:gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500"
+            className="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto"
           >
-            {/* Mock University Tags */}
-            {['Delhi University', 'IITs & NITs', 'BHU', 'JNU', 'University of Mumbai', 'University of Calcutta', 'Anna University', 'BITS Pilani'].map((uni) => (
+            {content.universities.list.map((uni) => (
               <motion.span 
                 key={uni}
                 variants={{
                   hidden: { opacity: 0, scale: 0.8 },
                   visible: { opacity: 1, scale: 1 }
                 }}
-                whileHover={{ scale: 1.1, backgroundColor: '#EEF2FF', color: '#4F46E5' }}
-                className="px-6 py-3 bg-slate-100 rounded-xl font-bold text-slate-800 text-lg cursor-default transition-colors"
+                whileHover={{ scale: 1.05, borderColor: '#CBD5E1' }}
+                className="px-6 py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-700 text-sm cursor-default transition-all shadow-sm"
               >
                 {uni}
               </motion.span>
@@ -1194,12 +1207,7 @@ export function Home() {
       </section>
 
       {/* Community Statistics Section */}
-      <section className="py-16 bg-indigo-600 text-white overflow-hidden relative">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500 rounded-full blur-3xl opacity-50"
-        ></motion.div>
+      <section className="py-20 bg-gradient-to-r from-[#3B2685] to-[#2E1A6B] text-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div 
             initial="hidden"
@@ -1209,23 +1217,19 @@ export function Home() {
               visible: { transition: { staggerChildren: 0.1 } },
               hidden: {}
             }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center"
           >
-            {[
-              { num: "50K+", label: "Students Connected" },
-              { num: "800+", label: "Universities Joined" },
-              { num: "2,000+", label: "Professors Onboard" },
-              { num: "10K+", label: "Stories Shared" }
-            ].map((stat, i) => (
+            {content.stats.items.map((stat, i) => (
               <motion.div 
                 key={i}
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0 }
                 }}
+                className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm hover:bg-white/10 transition-colors"
               >
-                <div className="text-4xl font-extrabold mb-2">{stat.num}</div>
-                <div className="text-indigo-200 font-medium">{stat.label}</div>
+                <div className="text-2xl font-bold mb-2 text-white">{stat.title}</div>
+                <div className="text-xs font-bold text-indigo-200 tracking-wider">{stat.subtitle}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -1233,52 +1237,27 @@ export function Home() {
       </section>
 
       {/* Final Call-To-Action Section */}
-      <section className="py-32 relative overflow-hidden flex items-center justify-center min-h-[600px]">
-        {/* Video Background */}
-        <div className="absolute inset-0 z-0">
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            className="w-full h-full object-cover opacity-30"
-          >
-            <source src="https://assets.mixkit.co/videos/preview/mixkit-group-of-friends-partying-happily-4640-large.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-indigo-900/80 mix-blend-multiply"></div>
-        </div>
-
+      <section className="py-32 bg-[#0B0F19] relative overflow-hidden flex items-center justify-center min-h-[500px]">
         <motion.div 
-          style={{ y: useTransform(scrollYProgress, [0.8, 1], [100, 0]) }}
+          style={{ y: useTransform(scrollYProgress, [0.8, 1], [50, 0]) }}
           className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10"
         >
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">Join India’s Student Professional Network</h2>
-          <p className="text-xl text-indigo-100 mb-10">Don't miss out on opportunities, mentorship, and connections that can shape your career.</p>
+          <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
+            {content.cta.title.split('Professional Network')[0]}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Professional Network</span>
+          </h2>
+          <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
+            {content.cta.subtitle}
+          </p>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex justify-center">
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
-              className="px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold text-lg hover:bg-indigo-50 transition-all shadow-xl shadow-indigo-900/20"
+              onClick={() => { user ? navigate('/feed') : setIsJoining(true); }} 
+              className="px-8 py-4 bg-white text-[#0B0F19] rounded-xl font-bold text-lg hover:bg-slate-100 transition-all flex items-center gap-2"
             >
-              Create Profile
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { setAuthMode('signup'); setIsJoining(true); }} 
-              className="px-8 py-4 bg-transparent text-white border-2 border-white/30 rounded-xl font-bold text-lg hover:bg-white/10 transition-all"
-            >
-              Join Now
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { setAuthMode('login'); setIsJoining(true); }} 
-              className="px-8 py-4 bg-indigo-500 text-white rounded-xl font-bold text-lg hover:bg-indigo-400 transition-all"
-            >
-              Login
+              {content.cta.button} <ArrowRight className="w-5 h-5" />
             </motion.button>
           </div>
         </motion.div>
@@ -1322,6 +1301,7 @@ export function Home() {
                 <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
                 <li><Link to="/guidelines" className="hover:text-white transition-colors">Community Guidelines</Link></li>
+                <li><Link to="/secure-admin/login" className="hover:text-white transition-colors text-indigo-400">Admin Portal</Link></li>
               </ul>
             </div>
           </div>
@@ -1506,13 +1486,13 @@ function OppCard({ icon: Icon, title }: any) {
         hidden: { opacity: 0, scale: 0.8 },
         visible: { opacity: 1, scale: 1 }
       }}
-      whileHover={{ scale: 1.05, backgroundColor: '#334155' }}
-      className="bg-slate-800 border border-slate-700 p-6 rounded-2xl text-center transition-all cursor-pointer group"
+      whileHover={{ scale: 1.05, backgroundColor: '#1e293b' }}
+      className="bg-[#151E32] border border-slate-700/50 p-6 rounded-2xl text-center transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[160px]"
     >
-      <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-        <Icon className="w-6 h-6 text-indigo-400" />
+      <div className="w-12 h-12 bg-[#1E293B] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border border-slate-700/50">
+        <Icon className="w-5 h-5 text-indigo-400" />
       </div>
-      <h3 className="font-bold text-white">{title}</h3>
+      <h3 className="font-bold text-sm text-slate-200">{title}</h3>
     </motion.div>
   );
 }
