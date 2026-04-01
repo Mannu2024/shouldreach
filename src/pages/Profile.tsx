@@ -9,6 +9,7 @@ import { ProfileVisibility, Education, Experience, Achievement, Certification, P
 import { CollegeSelect } from '../components/CollegeSelect';
 import { formatDistanceToNow } from 'date-fns';
 import { getProfileAdvice } from '../services/geminiService';
+import { sendNotification } from '../services/notificationService';
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'motion/react';
 
@@ -89,7 +90,8 @@ export function Profile() {
   };
 
   const [activities, setActivities] = useState<{ id: string; type: 'post' | 'comment'; content: string; createdAt: string }[]>([]);
-  const [viewers, setViewers] = useState<{ id: string; viewerName: string; viewerPhoto: string; createdAt: string }[]>([]);
+  const [viewers, setViewers] = useState<{ id: string; viewerId: string; viewerName: string; viewerPhoto: string; createdAt: string }[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
   const [endorsements, setEndorsements] = useState<{ [skill: string]: string[] }>({});
   const [showViewersModal, setShowViewersModal] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -182,6 +184,7 @@ export function Profile() {
     const unsubscribeViewers = onSnapshot(viewersQuery, (snapshot) => {
       const viewersList = snapshot.docs.map(doc => ({
         id: doc.id,
+        viewerId: doc.data().viewerId,
         viewerName: doc.data().viewerName,
         viewerPhoto: doc.data().viewerPhoto,
         createdAt: doc.data().createdAt
@@ -192,6 +195,63 @@ export function Profile() {
     });
     return () => unsubscribeViewers();
   }, [profile?.uid, isOwnProfile, user?.uid]);
+
+  // Fetch current user's connections
+  useEffect(() => {
+    if (!user) return;
+
+    const q1 = query(collection(db, 'connections'), where('requesterId', '==', user.uid));
+    const q2 = query(collection(db, 'connections'), where('receiverId', '==', user.uid));
+
+    const unsubscribe1 = onSnapshot(q1, (snapshot) => {
+      const conns = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setConnections(prev => {
+        const otherConns = prev.filter(c => c.requesterId !== user.uid);
+        return [...otherConns, ...conns];
+      });
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'connections');
+    });
+
+    const unsubscribe2 = onSnapshot(q2, (snapshot) => {
+      const conns = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setConnections(prev => {
+        const otherConns = prev.filter(c => c.receiverId !== user.uid);
+        return [...otherConns, ...conns];
+      });
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'connections');
+    });
+
+    return () => {
+      unsubscribe1();
+      unsubscribe2();
+    };
+  }, [user?.uid]);
+
+  const handleConnectViewer = async (receiverId: string) => {
+    if (!user) return;
+    try {
+      await addDoc(collection(db, 'connections'), {
+        requesterId: user.uid,
+        receiverId,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+
+      // Send notification
+      await sendNotification(
+        receiverId,
+        'connection_request',
+        'New Connection Request',
+        `${currentUserProfile?.displayName || 'Someone'} wants to connect with you.`,
+        '/network?tab=requests',
+        { requesterId: user.uid }
+      );
+    } catch (error) {
+      console.error("Error sending connection request:", error);
+    }
+  };
 
   useEffect(() => {
     if (!profile?.uid) return;
@@ -1750,19 +1810,43 @@ export function Profile() {
             <div className="flex-1 overflow-y-auto p-4">
               {viewers.length > 0 ? (
                 <div className="space-y-4">
-                  {viewers.map((viewer) => (
-                    <div key={viewer.id} className="flex items-center gap-3">
-                      <img 
-                        src={viewer.viewerPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(viewer.viewerName)}&background=random`} 
-                        alt={viewer.viewerName}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{viewer.viewerName}</p>
-                        <p className="text-xs text-slate-500">{formatDistanceToNow(new Date(viewer.createdAt), { addSuffix: true })}</p>
+                  {viewers.map((viewer) => {
+                    const isCurrentUser = user?.uid === viewer.viewerId;
+                    const connection = connections.find(c => 
+                      (c.requesterId === user?.uid && c.receiverId === viewer.viewerId) ||
+                      (c.receiverId === user?.uid && c.requesterId === viewer.viewerId)
+                    );
+                    const isConnected = connection?.status === 'accepted';
+                    const isPending = connection?.status === 'pending';
+
+                    return (
+                      <div key={viewer.id} className="flex items-center gap-3">
+                        <img 
+                          src={viewer.viewerPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(viewer.viewerName)}&background=random`} 
+                          alt={viewer.viewerName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-900">{viewer.viewerName}</p>
+                          <p className="text-xs text-slate-500">{formatDistanceToNow(new Date(viewer.createdAt), { addSuffix: true })}</p>
+                        </div>
+                        {!isCurrentUser && !isConnected && (
+                          <button
+                            onClick={() => handleConnectViewer(viewer.viewerId)}
+                            disabled={isPending}
+                            className={`px-3 py-1 text-sm font-semibold rounded-full border transition-colors flex items-center gap-1 ${
+                              isPending
+                                ? 'border-slate-300 text-slate-400 bg-slate-50 cursor-not-allowed'
+                                : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+                            }`}
+                          >
+                            {!isPending && <UserPlus className="w-3 h-3" />}
+                            {isPending ? 'Pending' : 'Connect'}
+                          </button>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-center text-slate-500 py-8">No viewers yet.</p>

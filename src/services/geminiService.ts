@@ -1,13 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-
 export async function getProfileAdvice(profile: any) {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
     const model = "gemini-3-flash-preview";
     const prompt = `
       Analyze the following user profile and provide 3-5 actionable tips to make it more professional and stand out to recruiters.
-      Focus on the headline, bio, skills, and experience.
+      Focus specifically on areas like the headline, bio, and skills.
       
       Profile Data:
       Name: ${profile.displayName}
@@ -34,6 +33,7 @@ export async function getProfileAdvice(profile: any) {
 
 export async function getSmartNetworkingAdvice(userProfile: any, targetProfile: any) {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
     const model = "gemini-3-flash-preview";
     const prompt = `
       Analyze these two profiles and explain in 2-3 sentences why they should connect. 

@@ -29,7 +29,7 @@ interface PostCardProps {
   onShareClick: () => void;
 }
 
-const REACTION_TYPES: { type: ReactionType; icon: React.ReactNode; label: string; color: string }[] = [
+const REACTION_TYPES: { type: ReactionType; icon: React.ReactElement; label: string; color: string }[] = [
   { type: 'like', icon: <ThumbsUp className="w-4 h-4" />, label: 'Like', color: 'text-blue-600' },
   { type: 'celebrate', icon: <Award className="w-4 h-4" />, label: 'Celebrate', color: 'text-green-600' },
   { type: 'support', icon: <Handshake className="w-4 h-4" />, label: 'Support', color: 'text-purple-600' },
@@ -47,6 +47,7 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [originalPost, setOriginalPost] = useState<Post | null>(null);
+  const [postReactions, setPostReactions] = useState<Reaction[]>([]);
 
   const media = post.media || (post.mediaUrl ? [{ url: post.mediaUrl, type: 'image' as const }] : []);
 
@@ -63,6 +64,25 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
       fetchOriginal();
     }
   }, [post.repostOf]);
+
+  // Fetch all reactions for the post
+  useEffect(() => {
+    if (!post.id) return;
+    const q = query(
+      collection(db, 'reactions'),
+      where('postId', '==', post.id)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const reactionsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Reaction[];
+      setPostReactions(reactionsData);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'reactions');
+    });
+    return () => unsubscribe();
+  }, [post.id]);
 
   // Fetch user's reaction
   useEffect(() => {
@@ -245,6 +265,45 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
         <MediaCarousel media={media} />
       )}
       
+      {(postReactions.length > 0 || post.commentsCount > 0 || (post.repostsCount && post.repostsCount > 0)) && (
+        <div className="px-5 py-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-50">
+          <div className="flex items-center gap-1.5">
+            {postReactions.length > 0 && (
+              <>
+                <div className="flex -space-x-1">
+                  {Array.from(new Set(postReactions.map(r => r.type)))
+                    .slice(0, 3)
+                    .map((type, i) => {
+                      const reactionDef = REACTION_TYPES.find(rt => rt.type === type);
+                      return (
+                        <div key={type} className={`w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center border border-white ${reactionDef?.color}`} style={{ zIndex: 3 - i }}>
+                          {reactionDef && React.cloneElement(reactionDef.icon, { className: 'w-2.5 h-2.5' } as any)}
+                        </div>
+                      );
+                    })}
+                </div>
+                <span className="hover:text-indigo-600 hover:underline cursor-pointer">
+                  {postReactions.length}
+                </span>
+              </>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {post.commentsCount > 0 && (
+              <span className="hover:text-indigo-600 hover:underline cursor-pointer" onClick={() => setShowComments(true)}>
+                {post.commentsCount} {post.commentsCount === 1 ? 'comment' : 'comments'}
+              </span>
+            )}
+            {post.repostsCount && post.repostsCount > 0 ? (
+              <span className="hover:text-indigo-600 hover:underline cursor-pointer">
+                {post.repostsCount} {post.repostsCount === 1 ? 'repost' : 'reposts'}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      )}
+
       <div className="px-5 py-2 flex items-center justify-between border-t border-slate-50 relative">
         <div className="flex items-center gap-1">
           {/* Reaction Button with Hover Menu */}
@@ -254,12 +313,11 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
             onMouseLeave={() => setShowReactions(false)}
           >
             <button 
-              onClick={() => handleReaction('like')}
+              onClick={() => handleReaction(userReaction ? userReaction.type : 'like')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all group ${userReaction ? currentReaction?.color : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50'}`}
             >
               {userReaction ? currentReaction?.icon : <ThumbsUp className="w-5 h-5 group-active:scale-125 transition-transform" />}
               <span className="text-sm font-bold">{userReaction ? currentReaction?.label : 'Like'}</span>
-              {post.likesCount > 0 && <span className="ml-1 text-xs">{post.likesCount}</span>}
             </button>
 
             <AnimatePresence>
@@ -294,7 +352,6 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
           >
             <MessageCircle className="w-5 h-5" />
             <span className="text-sm font-bold">Comment</span>
-            {post.commentsCount > 0 && <span className="ml-1 text-xs">{post.commentsCount}</span>}
           </button>
         </div>
 
@@ -304,7 +361,6 @@ export function PostCard({ post, onShareClick }: PostCardProps) {
         >
           <Share2 className="w-5 h-5" />
           <span className="text-sm font-bold">Share</span>
-          {post.repostsCount && post.repostsCount > 0 ? <span className="ml-1 text-xs">{post.repostsCount}</span> : null}
         </button>
       </div>
 

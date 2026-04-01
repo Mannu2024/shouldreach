@@ -119,6 +119,7 @@ export interface UserProfile {
   visibility: ProfileVisibility;
   createdAt: string;
   lastSeen?: string;
+  publicKey?: string;
 
   education?: Education[];
   experience?: Experience[];
@@ -219,6 +220,7 @@ export interface Message {
   senderId: string;
   receiverId: string;
   content: string;
+  iv?: string; // Initialization vector for E2EE
   read: boolean;
   createdAt: string;
 }
