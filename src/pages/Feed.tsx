@@ -34,6 +34,7 @@ export function Feed() {
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   
   // Media upload state
   const [mediaItems, setMediaItems] = useState<PostMedia[]>([]);
@@ -44,6 +45,7 @@ export function Feed() {
 
   // Share state
   const [sharingPostId, setSharingPostId] = useState<string | null>(null);
+  const [confirmRepost, setConfirmRepost] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -55,8 +57,10 @@ export function Feed() {
         ...doc.data()
       })) as Post[];
       setPosts(postsData);
+      setIsLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'posts');
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
@@ -158,7 +162,8 @@ export function Feed() {
     const term = searchTerm.toLowerCase();
     return posts.filter(post => 
       post.content.toLowerCase().includes(term) || 
-      post.authorName.toLowerCase().includes(term)
+      post.authorName.toLowerCase().includes(term) ||
+      (post.authorRole && post.authorRole.toLowerCase().includes(term))
     );
   }, [posts, searchTerm]);
 
@@ -175,46 +180,52 @@ export function Feed() {
         navigator.clipboard.writeText(postUrl);
         alert('Link copied to clipboard!');
       }
+      setSharingPostId(null);
     } else {
       // Internal share logic - Repost
-      if (!user || !profile) return;
-      
-      const originalPost = posts.find(p => p.id === postId);
-      if (!originalPost) return;
-
-      try {
-        await addDoc(collection(db, 'posts'), {
-          authorId: user.uid,
-          authorName: profile.displayName,
-          authorPhoto: profile.photoURL || '',
-          authorRole: profile.role,
-          content: `Reposted from ${originalPost.authorName}`,
-          repostOf: postId,
-          likesCount: 0,
-          commentsCount: 0,
-          repostsCount: 0,
-          createdAt: new Date().toISOString()
-        });
-
-        await updateDoc(doc(db, 'posts', postId), {
-          repostsCount: increment(1)
-        });
-
-        if (originalPost.authorId !== user.uid) {
-          await sendNotification(
-            originalPost.authorId,
-            'post_repost',
-            'Post Reposted',
-            `${profile.displayName} reposted your post.`,
-            '/feed',
-            { postId, reposterId: user.uid }
-          );
-        }
-        alert('Post shared to your network!');
-      } catch (error) {
-        console.error("Error reposting:", error);
-      }
+      setConfirmRepost(postId);
     }
+  };
+
+  const executeRepost = async () => {
+    if (!confirmRepost || !user || !profile) return;
+    
+    const originalPost = posts.find(p => p.id === confirmRepost);
+    if (!originalPost) return;
+
+    try {
+      await addDoc(collection(db, 'posts'), {
+        authorId: user.uid,
+        authorName: profile.displayName,
+        authorPhoto: profile.photoURL || '',
+        authorRole: profile.role,
+        content: `Reposted from ${originalPost.authorName}`,
+        repostOf: confirmRepost,
+        likesCount: 0,
+        commentsCount: 0,
+        repostsCount: 0,
+        createdAt: new Date().toISOString()
+      });
+
+      await updateDoc(doc(db, 'posts', confirmRepost), {
+        repostsCount: increment(1)
+      });
+
+      if (originalPost.authorId !== user.uid) {
+        await sendNotification(
+          originalPost.authorId,
+          'post_repost',
+          'Post Reposted',
+          `${profile.displayName} reposted your post.`,
+          '/feed',
+          { postId: confirmRepost, reposterId: user.uid }
+        );
+      }
+      alert('Post shared to your network!');
+    } catch (error) {
+      console.error("Error reposting:", error);
+    }
+    setConfirmRepost(null);
     setSharingPostId(null);
   };
 
@@ -235,19 +246,27 @@ export function Feed() {
       </div>
 
       {/* Create Post Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-        <div className="flex gap-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:hidden mb-2">
+            <img 
+              src={profile?.photoURL || `https://ui-avatars.com/api/?name=${profile?.displayName || 'User'}&background=random`} 
+              alt="Profile" 
+              className="w-10 h-10 rounded-full border border-slate-100 shadow-sm"
+            />
+            <span className="font-medium text-slate-900 text-sm">Create Post</span>
+          </div>
           <img 
             src={profile?.photoURL || `https://ui-avatars.com/api/?name=${profile?.displayName || 'User'}&background=random`} 
             alt="Profile" 
-            className="w-12 h-12 rounded-full border border-slate-100 shadow-sm"
+            className="hidden sm:block w-12 h-12 rounded-full border border-slate-100 shadow-sm"
           />
-          <form onSubmit={handleCreatePost} className="flex-1">
+          <form onSubmit={handleCreatePost} className="flex-1 w-full">
             <textarea
               value={newPostContent}
               onChange={(e) => setNewPostContent(e.target.value)}
               placeholder="What's on your mind? Share an update or achievement..."
-              className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[120px] transition-all"
+              className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-3 sm:p-4 text-sm sm:text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[100px] sm:min-h-[120px] transition-all"
             />
             
             {/* Media Previews */}
@@ -326,8 +345,8 @@ export function Feed() {
               )}
             </AnimatePresence>
 
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex gap-1">
+            <div className="flex flex-wrap items-center justify-between mt-3 sm:mt-4 gap-3">
+              <div className="flex flex-wrap gap-1">
                 <button 
                   type="button"
                   onClick={() => toggleMediaInput('image')}
@@ -376,24 +395,53 @@ export function Feed() {
 
       {/* Feed */}
       <div className="space-y-6">
-        {filteredPosts.map((post) => (
-          <PostCard 
-            key={post.id} 
-            post={post} 
-            onShareClick={() => setSharingPostId(post.id)}
-          />
-        ))}
-        
-        {filteredPosts.length === 0 && (
-          <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-10 h-10 text-slate-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">No posts found</h3>
-            <p className="text-slate-500 mt-2 max-w-xs mx-auto">
-              We couldn't find any posts matching your search. Try different keywords.
-            </p>
+        {isLoading ? (
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-slate-200 rounded-full"></div>
+                  <div className="space-y-2 flex-1">
+                    <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+                    <div className="h-3 bg-slate-200 rounded w-1/6"></div>
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-4 bg-slate-200 rounded w-full"></div>
+                  <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-slate-200 rounded w-4/6"></div>
+                </div>
+                <div className="h-48 bg-slate-200 rounded-xl mb-4"></div>
+                <div className="flex gap-4">
+                  <div className="h-8 bg-slate-200 rounded w-16"></div>
+                  <div className="h-8 bg-slate-200 rounded w-16"></div>
+                  <div className="h-8 bg-slate-200 rounded w-16"></div>
+                </div>
+              </div>
+            ))}
           </div>
+        ) : (
+          <>
+            {filteredPosts.map((post) => (
+              <PostCard 
+                key={post.id} 
+                post={post} 
+                onShareClick={() => setSharingPostId(post.id)}
+              />
+            ))}
+            
+            {filteredPosts.length === 0 && (
+              <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 border-dashed">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-10 h-10 text-slate-300" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">No posts found</h3>
+                <p className="text-slate-500 mt-2 max-w-xs mx-auto">
+                  We couldn't find any posts matching your search. Try different keywords.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -410,38 +458,66 @@ export function Feed() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-slate-900">Share Post</h3>
-                  <button onClick={() => setSharingPostId(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                  <button onClick={() => { setSharingPostId(null); setConfirmRepost(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                     <X className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
                 
-                <div className="space-y-3">
-                  <button 
-                    onClick={() => handleShare(sharingPostId, 'internal')}
-                    className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:bg-indigo-50 hover:border-indigo-100 transition-all group"
-                  >
-                    <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
-                      <Repeat className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
+                {confirmRepost ? (
+                  <div className="space-y-4 text-center py-4">
+                    <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Repeat className="w-8 h-8" />
                     </div>
-                    <div className="text-left">
-                      <p className="font-bold text-slate-900">Share to Network</p>
-                      <p className="text-sm text-slate-500">Post this to your feed</p>
+                    <h4 className="text-lg font-bold text-slate-900">Repost to your feed?</h4>
+                    <p className="text-sm text-slate-500">
+                      This will share the post with your network. It will appear on your profile and in your connections' feeds.
+                    </p>
+                    <div className="flex gap-3 mt-6">
+                      <button 
+                        onClick={() => setConfirmRepost(null)}
+                        className="flex-1 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={executeRepost}
+                        className="flex-1 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+                      >
+                        Yes, Repost
+                      </button>
                     </div>
-                  </button>
-                  
-                  <button 
-                    onClick={() => handleShare(sharingPostId, 'external')}
-                    className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-all group"
-                  >
-                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-slate-900 transition-colors">
-                      <LinkIcon className="w-6 h-6 text-slate-600 group-hover:text-white transition-colors" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-slate-900">Copy Link</p>
-                      <p className="text-sm text-slate-500">Share externally</p>
-                    </div>
-                  </button>
-                </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <button 
+                      onClick={() => handleShare(sharingPostId, 'internal')}
+                      className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:bg-indigo-50 hover:border-indigo-100 transition-all group"
+                      title="Repost this content to your own feed"
+                    >
+                      <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
+                        <Repeat className="w-6 h-6 text-indigo-600 group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-slate-900">Share to Network</p>
+                        <p className="text-sm text-slate-500">Repost this to your feed</p>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleShare(sharingPostId, 'external')}
+                      className="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-all group"
+                      title="Copy a link to share outside the app"
+                    >
+                      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-slate-900 transition-colors">
+                        <LinkIcon className="w-6 h-6 text-slate-600 group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-slate-900">Copy Link</p>
+                        <p className="text-sm text-slate-500">Share externally</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

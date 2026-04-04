@@ -96,6 +96,34 @@ export function Profile() {
   const [showViewersModal, setShowViewersModal] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+  const [profileConnectionsCount, setProfileConnectionsCount] = useState(0);
+
+  useEffect(() => {
+    if (!profile?.uid) return;
+
+    const q1 = query(collection(db, 'connections'), where('requesterId', '==', profile.uid), where('status', '==', 'accepted'));
+    const q2 = query(collection(db, 'connections'), where('receiverId', '==', profile.uid), where('status', '==', 'accepted'));
+
+    let count1 = 0;
+    let count2 = 0;
+
+    const updateCount = () => setProfileConnectionsCount(count1 + count2);
+
+    const unsubscribe1 = onSnapshot(q1, (snapshot) => {
+      count1 = snapshot.size;
+      updateCount();
+    });
+
+    const unsubscribe2 = onSnapshot(q2, (snapshot) => {
+      count2 = snapshot.size;
+      updateCount();
+    });
+
+    return () => {
+      unsubscribe1();
+      unsubscribe2();
+    };
+  }, [profile?.uid]);
 
   useEffect(() => {
     if (!profile?.uid) return;
@@ -779,7 +807,7 @@ export function Profile() {
                       {profile.city || 'City'}, {profile.state || 'India'} · <a href="#" className="text-blue-600 font-semibold hover:underline">Contact info</a>
                     </p>
                     <p className="text-blue-600 font-semibold text-sm mt-1 hover:underline cursor-pointer">
-                      {profile.connectionsCount || '500+'} connections
+                      {profileConnectionsCount} connections
                     </p>
                     
                     {!isOwnProfile && (
@@ -957,18 +985,18 @@ export function Profile() {
                 
                 <div className="p-4 rounded-lg text-left">
                   <p className="text-slate-900 font-bold text-lg flex items-center gap-2">
-                    <BarChart2 className="w-5 h-5 text-slate-600" /> 0
+                    <BarChart2 className="w-5 h-5 text-slate-600" /> {activities.filter(a => a.type === 'post').length}
                   </p>
-                  <p className="text-slate-900 font-semibold text-sm">Post impressions</p>
-                  <p className="text-slate-500 text-xs mt-1">Check out who's engaging with your posts.</p>
+                  <p className="text-slate-900 font-semibold text-sm">Posts created</p>
+                  <p className="text-slate-500 text-xs mt-1">Total posts you've shared.</p>
                 </div>
                 
                 <div className="p-4 rounded-lg text-left">
                   <p className="text-slate-900 font-bold text-lg flex items-center gap-2">
-                    <Search className="w-5 h-5 text-slate-600" /> 6
+                    <MessageSquare className="w-5 h-5 text-slate-600" /> {activities.filter(a => a.type === 'comment').length}
                   </p>
-                  <p className="text-slate-900 font-semibold text-sm">Search appearances</p>
-                  <p className="text-slate-500 text-xs mt-1">See how often you appear in search results.</p>
+                  <p className="text-slate-900 font-semibold text-sm">Comments made</p>
+                  <p className="text-slate-500 text-xs mt-1">Total comments on posts.</p>
                 </div>
               </div>
             </div>
@@ -979,7 +1007,7 @@ export function Profile() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">Activity</h2>
-                <p className="text-blue-600 font-semibold text-sm hover:underline cursor-pointer">{profile.connectionsCount || 0} connections</p>
+                <p className="text-blue-600 font-semibold text-sm hover:underline cursor-pointer">{profileConnectionsCount} connections</p>
               </div>
               <div className="flex gap-2">
                 {isOwnProfile && (

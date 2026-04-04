@@ -135,7 +135,7 @@ export function ProfileSetup() {
                   required
                   value={formData.displayName}
                   onChange={e => setFormData({...formData, displayName: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="e.g. Aarav Sharma"
                 />
               </div>
@@ -146,7 +146,7 @@ export function ProfileSetup() {
                   required
                   value={formData.headline}
                   onChange={e => setFormData({...formData, headline: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="e.g. Computer Science Student | Aspiring Developer"
                 />
               </div>
@@ -157,7 +157,7 @@ export function ProfileSetup() {
                     type="text" 
                     value={formData.city}
                     onChange={e => setFormData({...formData, city: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                     placeholder="e.g. New Delhi"
                   />
                 </div>
@@ -167,7 +167,7 @@ export function ProfileSetup() {
                     type="text" 
                     value={formData.state}
                     onChange={e => setFormData({...formData, state: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                     placeholder="e.g. Delhi"
                   />
                 </div>
@@ -216,7 +216,7 @@ export function ProfileSetup() {
                   required
                   value={formData.department}
                   onChange={e => setFormData({...formData, department: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="e.g. Computer Science & Engineering"
                 />
               </div>
@@ -226,7 +226,7 @@ export function ProfileSetup() {
                   <select 
                     value={formData.currentYear}
                     onChange={e => setFormData({...formData, currentYear: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   >
                     <option value="">Select Year</option>
                     <option value="1st Year">1st Year</option>
@@ -248,7 +248,7 @@ export function ProfileSetup() {
                       required
                       value={formData.currentYear}
                       onChange={e => setFormData({...formData, currentYear: e.target.value})}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                       placeholder="e.g. 2020"
                     />
                   </div>
@@ -258,7 +258,7 @@ export function ProfileSetup() {
                       type="text" 
                       value={formData.headline.split(' at ')[1] || ''}
                       onChange={e => setFormData({...formData, headline: `${formData.headline.split(' at ')[0]} at ${e.target.value}`})}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                       placeholder="e.g. Google"
                     />
                   </div>
@@ -272,7 +272,7 @@ export function ProfileSetup() {
                     required
                     value={formData.headline}
                     onChange={e => setFormData({...formData, headline: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                     placeholder="e.g. Assistant Professor"
                   />
                 </div>
@@ -321,7 +321,7 @@ export function ProfileSetup() {
                   required
                   value={formData.skills}
                   onChange={e => setFormData({...formData, skills: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="e.g. React, Node.js, Python, UI Design"
                 />
               </div>
@@ -331,7 +331,7 @@ export function ProfileSetup() {
                   required
                   value={formData.bio}
                   onChange={e => setFormData({...formData, bio: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   rows={5}
                   placeholder="Write a brief summary about your background, interests, and goals..."
                 />
@@ -379,7 +379,7 @@ export function ProfileSetup() {
                   type="url" 
                   value={formData.socialLinks.linkedin}
                   onChange={e => setFormData({...formData, socialLinks: {...formData.socialLinks, linkedin: e.target.value}})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="LinkedIn Profile URL"
                 />
               </div>
@@ -389,7 +389,7 @@ export function ProfileSetup() {
                   type="url" 
                   value={formData.socialLinks.github}
                   onChange={e => setFormData({...formData, socialLinks: {...formData.socialLinks, github: e.target.value}})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="GitHub Profile URL"
                 />
               </div>
@@ -399,7 +399,7 @@ export function ProfileSetup() {
                   type="url" 
                   value={formData.socialLinks.twitter}
                   onChange={e => setFormData({...formData, socialLinks: {...formData.socialLinks, twitter: e.target.value}})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="Twitter Profile URL"
                 />
               </div>
@@ -409,7 +409,7 @@ export function ProfileSetup() {
                   type="url" 
                   value={formData.socialLinks.portfolio}
                   onChange={e => setFormData({...formData, socialLinks: {...formData.socialLinks, portfolio: e.target.value}})}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-900"
                   placeholder="Portfolio Website URL"
                 />
               </div>

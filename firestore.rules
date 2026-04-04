@@ -166,7 +166,7 @@ service cloud.firestore {
       let data = request.resource.data;
       return hasOnlyAllowedFields(['chatId', 'senderId', 'receiverId', 'content', 'iv', 'read', 'createdAt']) &&
              data.chatId is string &&
-             data.senderId is string && data.senderId == request.auth.uid &&
+             data.senderId is string &&
              data.receiverId is string &&
              data.content is string && data.content.size() > 0 && data.content.size() <= 5000 &&
              (!('iv' in data) || (data.iv is string && data.iv.size() <= 100)) &&
@@ -235,7 +235,7 @@ service cloud.firestore {
     }
 
     match /connections/{connectionId} {
-      allow read: if isAuthenticated() && (request.auth.uid == resource.data.requesterId || request.auth.uid == resource.data.receiverId);
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidConnection() && request.resource.data.requesterId == request.auth.uid;
       allow update: if isAuthenticated() && isValidConnection() && request.resource.data.requesterId == resource.data.requesterId && request.resource.data.receiverId == resource.data.receiverId && request.resource.data.createdAt == resource.data.createdAt && (request.auth.uid == resource.data.requesterId || request.auth.uid == resource.data.receiverId);
       allow delete: if isAuthenticated() && (request.auth.uid == resource.data.requesterId || request.auth.uid == resource.data.receiverId);
@@ -264,7 +264,7 @@ service cloud.firestore {
 
     match /messages/{messageId} {
       allow read: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(resource.data.chatId)).data.participants;
-      allow create: if isAuthenticated() && isValidMessage();
+      allow create: if isAuthenticated() && isValidMessage() && request.resource.data.senderId == request.auth.uid;
       allow update: if isAuthenticated() && isValidMessage() && request.resource.data.senderId == resource.data.senderId && request.resource.data.createdAt == resource.data.createdAt && request.auth.uid == resource.data.receiverId; // Only receiver can update (e.g., mark as read)
       allow delete: if isAdmin();
     }
