@@ -89,6 +89,37 @@ export function Profile() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const handleEditProfile = () => {
+    setIsEditing(true);
+    setExpandedSections({
+      experience: false,
+      achievements: false,
+      education: false,
+      projects: false,
+      skills: false,
+      certifications: false,
+      followedCompanies: false,
+      interests: false,
+      socialLinks: false
+    });
+  };
+
+  const handleEditSection = (section: keyof typeof expandedSections) => {
+    setIsEditing(true);
+    setExpandedSections({
+      experience: false,
+      achievements: false,
+      education: false,
+      projects: false,
+      skills: false,
+      certifications: false,
+      followedCompanies: false,
+      interests: false,
+      socialLinks: false,
+      [section]: true
+    });
+  };
+
   const [activities, setActivities] = useState<{ id: string; type: 'post' | 'comment'; content: string; createdAt: string }[]>([]);
   const [viewers, setViewers] = useState<{ id: string; viewerId: string; viewerName: string; viewerPhoto: string; createdAt: string }[]>([]);
   const [connections, setConnections] = useState<any[]>([]);
@@ -648,7 +679,7 @@ export function Profile() {
   };
 
   return (
-    <div className="max-w-[1128px] mx-auto pt-6 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className={`max-w-[1128px] mx-auto pt-6 px-4 sm:px-6 lg:px-8 ${isEditing ? 'pb-24' : 'pb-12'}`}>
       {isOwnProfile && auth.currentUser && auth.currentUser.email && !auth.currentUser.emailVerified && (
         <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -679,9 +710,11 @@ export function Profile() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             {/* Cover Photo */}
             <div className="h-48 bg-gradient-to-r from-blue-100 to-blue-300 relative">
-              <button className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-sm text-slate-600 hover:bg-slate-50 transition-colors">
-                <Edit2 className="w-5 h-5" />
-              </button>
+              {isOwnProfile && (
+                <button className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-sm text-slate-600 hover:bg-slate-50 transition-colors">
+                  <Edit2 className="w-5 h-5" />
+                </button>
+              )}
             </div>
             
             <div className="px-6 pb-6">
@@ -699,10 +732,11 @@ export function Profile() {
                   {isOwnProfile && (
                     !isEditing ? (
                       <button 
-                        onClick={() => setIsEditing(true)}
-                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                        onClick={handleEditProfile}
+                        className="flex items-center gap-2 px-4 py-1.5 border border-slate-300 text-slate-700 rounded-full font-semibold hover:bg-slate-50 transition-colors"
                       >
-                        <Edit2 className="w-5 h-5" />
+                        <Edit2 className="w-4 h-4" />
+                        Edit Profile
                       </button>
                     ) : (
                       <div className="flex gap-2">
@@ -1052,8 +1086,8 @@ export function Profile() {
                     <Plus className="w-6 h-6" />
                   </button>
                 )}
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('experience')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1130,8 +1164,8 @@ export function Profile() {
                     <Plus className="w-6 h-6" />
                   </button>
                 )}
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('achievements')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1204,8 +1238,8 @@ export function Profile() {
                     <Plus className="w-6 h-6" />
                   </button>
                 )}
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('education')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1292,8 +1326,8 @@ export function Profile() {
                     <Plus className="w-6 h-6" />
                   </button>
                 )}
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('projects')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1399,8 +1433,8 @@ export function Profile() {
                     <Plus className="w-6 h-6" />
                   </button>
                 )}
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('skills')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1462,8 +1496,8 @@ export function Profile() {
                     <Plus className="w-6 h-6" />
                   </button>
                 )}
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('certifications')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1535,8 +1569,8 @@ export function Profile() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-slate-900">Social Links</h2>
               <div className="flex gap-2">
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('socialLinks')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1652,8 +1686,8 @@ export function Profile() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-slate-900">Companies Followed</h2>
               <div className="flex gap-2">
-                {isOwnProfile && (
-                  <button onClick={() => setIsEditing(!isEditing)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                {!isEditing && isOwnProfile && (
+                  <button onClick={() => handleEditSection('followedCompanies')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
                     <Edit2 className="w-5 h-5" />
                   </button>
                 )}
@@ -1883,6 +1917,25 @@ export function Profile() {
           </div>
         </div>
       )}
+      {/* Persistent Save Bar */}
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 flex justify-end gap-3 px-4 md:px-8">
+          <button 
+            onClick={() => setIsEditing(false)}
+            className="px-6 py-2 border border-slate-300 text-slate-700 rounded-full font-semibold hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSave}
+            className="px-6 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            Save Changes
+          </button>
+        </div>
+      )}
+
       {/* Section Editing Modal */}
       {editingSection && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
