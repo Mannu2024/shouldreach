@@ -394,9 +394,9 @@ export function Home() {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative overflow-hidden max-h-[90vh] overflow-y-auto"
+            className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-3xl shadow-[0_20px_50px_-12px_rgba(79,70,229,0.25)] max-w-md w-full p-8 relative overflow-hidden max-h-[90vh] overflow-y-auto border border-indigo-100/50"
           >
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-400 via-white to-green-500"></div>
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
             <button onClick={() => { setIsJoining(false); setError(''); setConfirmationResult(null); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
               <X className="w-6 h-6" />
             </button>
@@ -436,21 +436,21 @@ export function Home() {
               <motion.button 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => { setAuthMethod('google'); setError(''); }}
-                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${authMethod === 'google' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${authMethod === 'google' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-200' : 'bg-white/60 text-slate-600 hover:bg-white border border-indigo-50'}`}
               >
                 Google
               </motion.button>
               <motion.button 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => { setAuthMethod('email'); setError(''); }}
-                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${authMethod === 'email' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${authMethod === 'email' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-200' : 'bg-white/60 text-slate-600 hover:bg-white border border-indigo-50'}`}
               >
                 Email
               </motion.button>
               <motion.button 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => { setAuthMethod('phone'); setError(''); }}
-                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${authMethod === 'phone' ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${authMethod === 'phone' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-200' : 'bg-white/60 text-slate-600 hover:bg-white border border-indigo-50'}`}
               >
                 Phone
               </motion.button>
@@ -462,7 +462,7 @@ export function Home() {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleGoogleLogin} 
                 disabled={loading}
-                className="w-full py-4 bg-white border-2 border-slate-100 text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full py-4 bg-white/80 backdrop-blur-sm border border-indigo-100 text-slate-900 rounded-xl font-bold text-lg hover:bg-white hover:shadow-md transition-all flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-6 h-6 bg-white rounded-full p-0.5" />
                 {loading ? 'Connecting...' : 'Continue with Google'}
@@ -489,7 +489,7 @@ export function Home() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900"
+                    className="w-full pl-12 pr-4 py-3 bg-white/60 backdrop-blur-sm border border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 focus:bg-white"
                   />
                 </div>
                 {authMode === 'login' && !resetSent && (
@@ -511,7 +511,7 @@ export function Home() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900"
+                    className="w-full pl-12 pr-12 py-3 bg-white/60 backdrop-blur-sm border border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 focus:bg-white"
                   />
                   <button 
                     type="button"
@@ -526,7 +526,7 @@ export function Home() {
                   whileTap={{ scale: 0.98 }}
                   type="submit" 
                   disabled={loading}
-                  className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
                 >
                   {loading ? 'Processing...' : (authMode === 'signup' ? 'Create Account' : 'Login')}
                 </motion.button>
@@ -549,7 +549,7 @@ export function Home() {
                         required
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900"
+                        className="w-full pl-12 pr-4 py-3 bg-white/60 backdrop-blur-sm border border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 focus:bg-white"
                       />
                     </div>
                     <div id="recaptcha-container"></div>
@@ -558,7 +558,7 @@ export function Home() {
                       whileTap={{ scale: 0.98 }}
                       type="submit" 
                       disabled={loading}
-                      className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
+                      className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
                     >
                       {loading ? 'Sending Code...' : 'Send OTP'}
                     </motion.button>
@@ -578,14 +578,14 @@ export function Home() {
                       maxLength={6}
                       value={verificationCode}
                       onChange={(e) => setVerificationCode(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-center text-2xl tracking-[0.5em] font-bold text-slate-900"
+                      className="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-center text-2xl tracking-[0.5em] font-bold text-slate-900 focus:bg-white"
                     />
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       type="submit" 
                       disabled={loading}
-                      className="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
+                      className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
                     >
                       {loading ? 'Verifying...' : 'Verify & Continue'}
                     </motion.button>
