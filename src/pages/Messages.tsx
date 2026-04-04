@@ -380,6 +380,7 @@ export function Messages() {
       setNewMessage('');
     } catch (error) {
       console.error("Error sending message:", error);
+      handleFirestoreError(error, OperationType.CREATE, 'messages');
     }
   };
 
@@ -733,7 +734,7 @@ export function Messages() {
                 </div>
               )}
               <div className="flex items-end gap-2">
-                <div className="flex-1 bg-white rounded-xl flex items-end shadow-sm border border-slate-200 overflow-hidden">
+                <div className="flex-1 bg-white rounded-xl flex items-end shadow-sm border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-[#00a884] focus-within:border-transparent transition-all">
                   <button 
                     type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -766,7 +767,7 @@ export function Messages() {
                         }
                       }}
                       placeholder="Type a message"
-                      className="w-full bg-transparent px-2 py-3 text-[15px] focus:outline-none resize-none max-h-32 min-h-[44px]"
+                      className="w-full bg-transparent px-3 py-3 text-[15px] text-slate-900 placeholder:text-slate-500 focus:outline-none resize-none max-h-32 min-h-[44px] leading-relaxed"
                       rows={1}
                       style={{ height: 'auto' }}
                       onInput={(e) => {

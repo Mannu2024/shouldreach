@@ -164,11 +164,12 @@ service cloud.firestore {
 
     function isValidMessage() {
       let data = request.resource.data;
-      return hasOnlyAllowedFields(['chatId', 'senderId', 'receiverId', 'content', 'read', 'createdAt']) &&
+      return hasOnlyAllowedFields(['chatId', 'senderId', 'receiverId', 'content', 'iv', 'read', 'createdAt']) &&
              data.chatId is string &&
              data.senderId is string && data.senderId == request.auth.uid &&
              data.receiverId is string &&
              data.content is string && data.content.size() > 0 && data.content.size() <= 5000 &&
+             (!('iv' in data) || (data.iv is string && data.iv.size() <= 100)) &&
              data.read is bool &&
              data.createdAt is string;
     }
